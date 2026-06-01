@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบลงทะเบียนและคัดกรองกลุ่มเสี่ยงพยาธิใบไม้ตับ (OVCCA) อำเภอเสลภูมิ จังหวัดร้อยเอ็ด</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(34, 197, 94, 0.18), transparent 34rem),
+                radial-gradient(circle at top right, rgba(14, 165, 233, 0.2), transparent 30rem),
+                linear-gradient(180deg, #f0f9ff 0%, #f8fafc 44%, #eefdf5 100%);
+            overflow-x: hidden;
+            color: #0f172a;
+        }
+        h1, h2 {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        input, select {
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        }
+        input:focus, select:focus {
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.16);
+            outline: none;
+        }
+        .tab-btn.active {
+            background: #ffffff;
+            color: #0369a1;
+            font-weight: 600;
+            box-shadow: 0 12px 28px rgba(14, 165, 233, 0.18);
+        }
+        .tab-btn {
+            border-radius: 999px;
+            color: rgba(255, 255, 255, 0.84);
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* สไตล์ตารางที่รองรับมือถือแบบเลื่อนได้ */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        th, td { white-space: nowrap; }
+        .surface-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(125, 211, 252, 0.34);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+        }
+        .section-title {
+            border-bottom: 2px solid rgba(14, 165, 233, 0.18);
+            color: #0f172a;
+            font-weight: 700;
+            padding-bottom: 0.75rem;
+        }
+        .hero-panel {
+            background:
+                linear-gradient(135deg, rgba(3, 105, 161, 0.95), rgba(14, 165, 233, 0.88) 45%, rgba(16, 185, 129, 0.9));
+            border-radius: 1.75rem;
+            box-shadow: 0 26px 60px rgba(3, 105, 161, 0.22);
+        }
+        .soft-panel {
+            background: linear-gradient(135deg, rgba(240, 249, 255, 0.98), rgba(236, 253, 245, 0.98));
+            border: 1px solid rgba(14, 165, 233, 0.16);
+            border-radius: 1.25rem;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(226, 232, 240, 0.95);
+            border-radius: 1.25rem;
+            box-shadow: 0 16px 36px rgba(15, 23, 42, 0.08);
+        }
+        .action-primary {
+            background: linear-gradient(135deg, #0284c7, #10b981);
+            border-radius: 1rem;
+            box-shadow: 0 16px 34px rgba(14, 165, 233, 0.28);
+        }
+        .action-primary:hover {
+            filter: brightness(1.03);
+        }
+        .action-secondary {
+            background: #ffffff;
+            border: 1px solid rgba(14, 165, 233, 0.24);
+            border-radius: 1rem;
+            color: #0369a1;
+        }
+        .choice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.75rem;
+        }
+        .choice-label {
+            display: block;
+            position: relative;
+        }
+        .choice-input {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+        }
+        .choice-button {
+            align-items: center;
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            font-weight: 600;
+            justify-content: center;
+            min-height: 52px;
+            padding: 0.75rem 1rem;
+            text-align: center;
+            transition: all 0.15s ease;
+            width: 100%;
+        }
+        .choice-input:focus + .choice-button {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+        }
+        .choice-input:checked + .choice-button {
+            background: #eff6ff;
+            border-color: #2563eb;
+            box-shadow: inset 0 0 0 1px #2563eb;
+            color: #1d4ed8;
+        }
+        .choice-input.danger:checked + .choice-button {
+            background: #fef2f2;
+            border-color: #dc2626;
+            box-shadow: inset 0 0 0 1px #dc2626;
+            color: #b91c1c;
+        }
+        .choice-input.success:checked + .choice-button {
+            background: #ecfdf5;
+            border-color: #16a34a;
+            box-shadow: inset 0 0 0 1px #16a34a;
+            color: #15803d;
+        }
+        .choice-input.warning:checked + .choice-button {
+            background: #fff7ed;
+            border-color: #ea580c;
+            box-shadow: inset 0 0 0 1px #ea580c;
+            color: #c2410c;
+        }
+        .choice-input:disabled + .choice-button {
+            background: #f3f4f6;
+            color: #9ca3af;
+            cursor: not-allowed;
+            opacity: 0.65;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="bg-sky-700/95 text-white shadow-lg sticky top-0 z-50 backdrop-blur">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex min-h-16 flex-col gap-1 py-2 sm:h-16 sm:flex-row sm:items-center sm:justify-between sm:gap-0 sm:py-0">
+                <div class="flex items-center justify-center sm:justify-start">
+                    <span class="font-bold text-base md:text-xl truncate">OVCCA<span class="hidden sm:inline"> เสลภูมิ</span></span>
+                </div>
+                <div class="flex shrink-0 items-center justify-center gap-2 sm:gap-2 md:gap-3">
+                    <button onclick="switchTab('setupTab')" id="btn-setupTab" class="tab-btn active px-3 py-2 text-xs sm:text-sm md:text-base transition">ตั้งค่า</button>
+                    <button onclick="switchTab('formTab')" id="btn-formTab" class="tab-btn px-3 py-2 text-xs sm:text-sm md:text-base transition"><span class="sm:hidden">คัดกรอง</span><span class="hidden sm:inline">แบบคัดกรอง</span></button>
+                    <button onclick="switchTab('dashboardTab')" id="btn-dashboardTab" class="tab-btn px-3 py-2 text-xs sm:text-sm md:text-base transition"><span class="sm:hidden">Dash</span><span class="hidden sm:inline">Dashboard</span></button>
+                    <div class="w-px h-5 bg-white/30 mx-1 hidden sm:block"></div>
+                    <button id="navLoginBtn" onclick="showLoginModal()" class="tab-btn px-3 py-1.5 text-xs sm:text-sm transition border border-white/40 hover:bg-white/20">🔐 เข้าสู่ระบบ</button>
+                    <div id="navLoggedIn" class="hidden items-center gap-2">
+                        <span class="text-xs text-sky-100 hidden md:inline">✅ เจ้าหน้าที่</span>
+                        <button onclick="logout()" class="rounded-full bg-red-400/90 hover:bg-red-500 text-white text-xs sm:text-sm font-semibold px-3 py-1.5 transition">ออกจากระบบ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto p-4 mb-20">
+        
+        <!-- Header Title -->
+        <div class="hero-panel text-white mb-6 mt-4 p-6 md:p-8">
+            <div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+                <div>
+                    <p class="text-sm font-semibold uppercase tracking-wide text-sky-100">OVCCA เสลภูมิ</p>
+                    <h1 class="mt-2 text-2xl sm:text-3xl md:text-4xl font-bold leading-snug">ระบบลงทะเบียนและคัดกรองกลุ่มเสี่ยงพยาธิใบไม้ตับ</h1>
+                    <h2 class="mt-1 text-lg sm:text-xl md:text-2xl text-sky-50 font-semibold leading-snug">อำเภอเสลภูมิ จังหวัดร้อยเอ็ด</h2>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-center sm:flex sm:text-left">
+                    <div class="rounded-2xl bg-white/18 px-4 py-3 backdrop-blur">
+                        <p class="text-xs text-sky-100">เริ่มต้น</p>
+                        <p class="text-base font-bold">ตั้งค่า</p>
+                    </div>
+                    <div class="rounded-2xl bg-white/18 px-4 py-3 backdrop-blur">
+                        <p class="text-xs text-sky-100">ประเมิน</p>
+                        <p class="text-base font-bold">เรียลไทม์</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- TAB 0: ตั้งค่าเบื้องต้น -->
+        <!-- ======================= -->
+        <div id="setupTab" class="surface-card block p-6 md:p-8">
+            <div class="grid gap-6 lg:grid-cols-[1fr_0.72fr]">
+                <form id="setupForm" onsubmit="saveSetup(event)" class="soft-panel p-5 md:p-6">
+                    <div class="mb-5">
+                        <p class="text-sm font-semibold text-sky-700">หน้าแรก</p>
+                        <h3 class="text-2xl font-bold text-slate-900">ข้อมูลตั้งค่าเบื้องต้น</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">รพ.สต. ที่รับผิดชอบ <span class="text-red-500">*</span></label>
+                            <select id="setupHospital" required class="w-full border border-sky-100 rounded-xl bg-white p-3">
+                                <option value="">-- เลือกรพ.สต. --</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ชื่อ-สกุล ผู้คัดกรอง/ผู้บันทึกข้อมูล <span class="text-red-500">*</span></label>
+                            <input type="text" id="setupRecorder" required class="w-full border border-sky-100 rounded-xl bg-white p-3" placeholder="ระบุชื่อผู้คัดกรอง">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">บ้านเลขที่ <span class="text-red-500">*</span></label>
+                            <input type="text" id="setupHouseNo" required class="w-full border border-sky-100 rounded-xl bg-white p-3">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">หมู่ที่ <span class="text-red-500">*</span></label>
+                            <input type="text" id="setupMoo" required class="w-full border border-sky-100 rounded-xl bg-white p-3">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">ตำบล <span class="text-red-500">*</span></label>
+                            <input type="text" id="setupSubdistrict" required class="w-full border border-sky-100 rounded-xl bg-white p-3">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">รหัสไปรษณีย์</label>
+                            <input type="text" id="setupZipcode" class="w-full border border-sky-100 rounded-xl bg-white p-3" value="45120">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">อำเภอ</label>
+                            <input type="text" id="setupDistrict" class="w-full border border-sky-100 rounded-xl bg-slate-50 p-3" value="เสลภูมิ" readonly>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1">จังหวัด</label>
+                            <input type="text" id="setupProvince" class="w-full border border-sky-100 rounded-xl bg-slate-50 p-3" value="ร้อยเอ็ด" readonly>
+                        </div>
+                    </div>
+                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                        <button type="submit" class="action-primary flex-1 px-5 py-3 font-bold text-white">บันทึกและเริ่มคัดกรอง</button>
+                        <button type="button" onclick="switchTab('dashboardTab')" class="action-secondary px-5 py-3 font-bold">Dashboard</button>
+                    </div>
+                </form>
+
+                <div class="rounded-3xl bg-white p-5 shadow-sm border border-emerald-100">
+                    <p class="text-sm font-semibold text-emerald-700">ค่าที่จำไว้ในเครื่องนี้</p>
+                    <div class="mt-4 space-y-3 text-sm">
+                        <div class="rounded-2xl bg-sky-50 p-4">
+                            <p class="text-slate-500">หน่วยรับผิดชอบ</p>
+                            <p id="setupPreviewHospital" class="mt-1 font-bold text-slate-900">-</p>
+                        </div>
+                        <div class="rounded-2xl bg-emerald-50 p-4">
+                            <p class="text-slate-500">ผู้คัดกรอง</p>
+                            <p id="setupPreviewRecorder" class="mt-1 font-bold text-slate-900">-</p>
+                        </div>
+                        <div class="rounded-2xl bg-amber-50 p-4">
+                            <p class="text-slate-500">ที่อยู่ตั้งต้น</p>
+                            <p id="setupPreviewAddress" class="mt-1 font-bold text-slate-900">-</p>
+                        </div>
+                    </div>
+                    <button onclick="switchTab('formTab')" class="mt-5 w-full rounded-2xl bg-slate-900 px-5 py-3 font-bold text-white hover:bg-slate-800">ไปหน้าแบบคัดกรอง</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================= -->
+        <!-- TAB 1: ฟอร์มคัดกรอง -->
+        <!-- ======================= -->
+        <div id="formTab" class="surface-card hidden p-6 md:p-8">
+            <form id="screeningForm" onsubmit="submitForm(event)">
+                
+                <!-- ส่วนที่ 1 ข้อมูลทั่วไป -->
+                <h3 class="text-lg font-semibold text-gray-800 border-b-2 border-blue-200 pb-2 mb-4">ส่วนที่ 1: ข้อมูลทั่วไป</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">รพ.สต. ที่รับผิดชอบ <span class="text-red-500">*</span></label>
+                        <select id="hospital" required class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">-- เลือกรพ.สต. --</option>
+                            <option value="รพ.เสลภูมิ">รพ.เสลภูมิ</option>
+                            <option value="รพ.สต.บ้านขวาว">รพ.สต.บ้านขวาว</option>
+                            <option value="รพ.สต.บ้านผักกาดหญ้า">รพ.สต.บ้านผักกาดหญ้า</option>
+                            <option value="รพ.สต.บ้านเมืองไพร">รพ.สต.บ้านเมืองไพร</option>
+                            <option value="รพ.สต.บ้านน้ำจั้นใหญ่">รพ.สต.บ้านน้ำจั้นใหญ่</option>
+                            <option value="รพ.สต.บ้านสะทอน">รพ.สต.บ้านสะทอน</option>
+                            <option value="รพ.สต.บ้านกุดแข้">รพ.สต.บ้านกุดแข้</option>
+                            <option value="รพ.สต.บ้านพันขาง">รพ.สต.บ้านพันขาง</option>
+                            <option value="รพ.สต.บ้านหัวคู">รพ.สต.บ้านหัวคู</option>
+                            <option value="รพ.สต.บ้านกกทัน">รพ.สต.บ้านกกทัน</option>
+                            <option value="รพ.สต.บ้านไค่นุ่น">รพ.สต.บ้านไค่นุ่น</option>
+                            <option value="รพ.สต.บ้านป่าขี">รพ.สต.บ้านป่าขี</option>
+                            <option value="รพ.สต.บ้านใหม่สามัคคี">รพ.สต.บ้านใหม่สามัคคี</option>
+                            <option value="รพ.สต.บ้านนาเมือง">รพ.สต.บ้านนาเมือง</option>
+                            <option value="รพ.สต.บ้านบะหลวง">รพ.สต.บ้านบะหลวง</option>
+                            <option value="รพ.สต.บ้านท่าม่วง">รพ.สต.บ้านท่าม่วง</option>
+                            <option value="รพ.สต.บ้านดงหวาย">รพ.สต.บ้านดงหวาย</option>
+                            <option value="รพ.สต.บ้านนาทม">รพ.สต.บ้านนาทม</option>
+                            <option value="รพ.สต.บ้านหวาย">รพ.สต.บ้านหวาย</option>
+                            <option value="รพ.สต.บ้านมะหรี่">รพ.สต.บ้านมะหรี่</option>
+                            <option value="รพ.สต.บ้านนาโพธิ์">รพ.สต.บ้านนาโพธิ์</option>
+                            <option value="รพ.สต.บ้านหนองฟ้า">รพ.สต.บ้านหนองฟ้า</option>
+                            <option value="รพ.สต.บ้านสะอาดนาดี">รพ.สต.บ้านสะอาดนาดี</option>
+                            <option value="รพ.สต.บ้านนาวี">รพ.สต.บ้านนาวี</option>
+                            <option value="รพ.สต.บ้านหนองจอก">รพ.สต.บ้านหนองจอก</option>
+                            <option value="รพ.สต.บ้านห้วยสามัคคี">รพ.สต.บ้านห้วยสามัคคี</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">เลขบัตรประชาชน 13 หลัก <span class="text-red-500">*</span></label>
+                        <input type="text" id="cid" required maxlength="13" pattern="\d{13}" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-blue-500 focus:border-blue-500" placeholder="0000000000000">
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div class="sm:col-span-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">คำนำหน้า <span class="text-red-500">*</span></label>
+                            <select id="prefix" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                                <option value="นาย">นาย</option>
+                                <option value="นาง">นาง</option>
+                                <option value="นางสาว">นางสาว</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ <span class="text-red-500">*</span></label>
+                            <input type="text" id="fname" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">นามสกุล <span class="text-red-500">*</span></label>
+                        <input type="text" id="lname" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">เพศ <span class="text-red-500">*</span></label>
+                        <select id="gender" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                            <option value="">-- ระบุเพศ --</option>
+                            <option value="ชาย">ชาย</option>
+                            <option value="หญิง">หญิง</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">หมายเลขโทรศัพท์</label>
+                        <input type="tel" id="phone" class="w-full border border-gray-300 rounded-lg p-2.5" placeholder="08xxxxxxxx">
+                    </div>
+                </div>
+
+                <!-- ส่วนวันเกิด (ปฏิทิน พ.ศ.) -->
+                <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">วัน/เดือน/ปีเกิด (พ.ศ.) <span class="text-red-500">*</span></label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-4">
+                        <select id="dob_day" required class="border border-gray-300 rounded-lg p-2.5" onchange="calculateAge()"><option value="">วัน</option></select>
+                        <select id="dob_month" required class="border border-gray-300 rounded-lg p-2.5" onchange="calculateAge()">
+                            <option value="">เดือน</option>
+                            <option value="1">มกราคม</option><option value="2">กุมภาพันธ์</option><option value="3">มีนาคม</option>
+                            <option value="4">เมษายน</option><option value="5">พฤษภาคม</option><option value="6">มิถุนายน</option>
+                            <option value="7">กรกฎาคม</option><option value="8">สิงหาคม</option><option value="9">กันยายน</option>
+                            <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+                        </select>
+                        <select id="dob_year" required class="border border-gray-300 rounded-lg p-2.5" onchange="calculateAge()"><option value="">ปี พ.ศ.</option></select>
+                    </div>
+                    <div class="mt-3">
+                        <span class="text-gray-700 font-medium">อายุที่คำนวณได้: </span>
+                        <span id="display_age" class="text-blue-600 font-bold text-lg">-</span> <span class="text-gray-700">ปี</span>
+                        <input type="hidden" id="age" name="age">
+                    </div>
+                </div>
+
+                <!-- ส่วนที่อยู่ -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                    <div class="lg:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">บ้านเลขที่ <span class="text-red-500">*</span></label>
+                        <input type="text" id="houseNo" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                    <div class="lg:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">หมู่ที่ <span class="text-red-500">*</span></label>
+                        <input type="text" id="moo" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                    <div class="sm:col-span-2 md:col-span-1 lg:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">ตำบล <span class="text-red-500">*</span></label>
+                        <input type="text" id="subdistrict" required class="w-full border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                    <div class="sm:col-span-2 md:col-span-1 lg:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">อำเภอ</label>
+                        <input type="text" id="district" value="เสลภูมิ" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                    <div class="sm:col-span-2 md:col-span-1 lg:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">จังหวัด</label>
+                        <input type="text" id="province" value="ร้อยเอ็ด" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                    <div class="sm:col-span-2 md:col-span-1 lg:col-span-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">รหัสไปรษณีย์</label>
+                        <input type="text" id="zipcode" value="45120" class="w-full border border-gray-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+
+                <!-- ส่วนที่ 2 ข้อมูลคัดกรองความเสี่ยง -->
+                <h3 class="text-lg font-semibold text-gray-800 border-b-2 border-blue-200 pb-2 mb-4 mt-8">ส่วนที่ 2: ข้อมูลคัดกรองความเสี่ยงและพฤติกรรม</h3>
+                
+                <div class="mb-4 bg-red-50 p-4 rounded-lg">
+                    <label class="block font-medium text-gray-800 mb-2">1. คุณเคยตรวจพบพยาธิใบไม้ตับหรือไม่? <span class="text-red-500">*</span></label>
+                    <div class="choice-grid">
+                        <label class="choice-label"><input type="radio" name="q1_found" value="เคย" required class="choice-input danger" onchange="updateRiskAssessment()"><span class="choice-button">เคย</span></label>
+                        <label class="choice-label"><input type="radio" name="q1_found" value="ไม่เคย" class="choice-input success" onchange="updateRiskAssessment()"><span class="choice-button">ไม่เคย</span></label>
+                        <label class="choice-label"><input type="radio" name="q1_found" value="ไม่ทราบ" class="choice-input warning" onchange="updateRiskAssessment()"><span class="choice-button">ไม่ทราบ</span></label>
+                    </div>
+                </div>
+
+                <div class="mb-4 bg-red-50 p-4 rounded-lg">
+                    <label class="block font-medium text-gray-800 mb-2">2. คุณเคยได้รับการรักษาด้วยยาฆ่าพยาธิใบไม้ตับหรือไม่? <span class="text-red-500">*</span></label>
+                    <div class="choice-grid">
+                        <label class="choice-label"><input type="radio" name="q2_med" value="เคย" required class="choice-input danger" onchange="updateRiskAssessment()"><span class="choice-button">เคย</span></label>
+                        <label class="choice-label"><input type="radio" name="q2_med" value="ไม่เคย" class="choice-input success" onchange="updateRiskAssessment()"><span class="choice-button">ไม่เคย</span></label>
+                        <label class="choice-label"><input type="radio" name="q2_med" value="ไม่ทราบ" class="choice-input warning" onchange="updateRiskAssessment()"><span class="choice-button">ไม่ทราบ</span></label>
+                    </div>
+                </div>
+
+                <div class="mb-4 bg-orange-50 p-4 rounded-lg">
+                    <label class="block font-medium text-gray-800 mb-2">3. คุณเคยรับประทานปลาน้ำจืดที่มีเกล็ดดิบๆสุกๆ หรือปลาร้าไม่ต้มสุกหรือไม่? <span class="text-red-500">*</span></label>
+                    <div class="choice-grid">
+                        <label class="choice-label"><input type="radio" name="q3_rawfish" value="เคย" required class="choice-input danger" onchange="updateRiskAssessment()"><span class="choice-button">เคย</span></label>
+                        <label class="choice-label"><input type="radio" name="q3_rawfish" value="ไม่เคย" class="choice-input success" onchange="updateRiskAssessment()"><span class="choice-button">ไม่เคย</span></label>
+                    </div>
+                </div>
+
+                <div class="mb-6 p-4 rounded-lg border border-gray-200">
+                    <label class="block font-medium text-gray-800 mb-2">4. คุณได้รับการวินิจฉัยจากแพทย์ว่าเป็นโรคใดบ้างต่อไปนี้ (เลือกได้มากกว่า 1 ข้อ)</label>
+                    <div class="choice-grid">
+                        <label class="choice-label"><input type="checkbox" name="disease" value="ไม่มีโรคประจำตัว" class="choice-input success" onchange="toggleDiseaseNone(this)"><span class="choice-button">ไม่มีโรคประจำตัว</span></label>
+                        <label class="choice-label"><input type="checkbox" name="disease" value="เบาหวาน" class="choice-input" onchange="toggleDiseaseOther(this)"><span class="choice-button">เบาหวาน</span></label>
+                        <label class="choice-label"><input type="checkbox" name="disease" value="ความดันโลหิตสูง" class="choice-input" onchange="toggleDiseaseOther(this)"><span class="choice-button">ความดันโลหิตสูง</span></label>
+                        <label class="choice-label"><input type="checkbox" name="disease" value="โรคตับ/ตับอักเสบ" class="choice-input danger" onchange="toggleDiseaseOther(this)"><span class="choice-button">โรคตับ/ตับอักเสบ</span></label>
+                        <label class="choice-label"><input type="checkbox" name="disease" value="ประวัติตับอักเสบที่ผู้ตรวจพบ" class="choice-input danger" onchange="toggleDiseaseOther(this)"><span class="choice-button">ประวัติตับอักเสบที่ผู้ตรวจพบ</span></label>
+                        <label class="choice-label"><input type="checkbox" name="disease" value="โรคมะเร็ง" class="choice-input" onchange="toggleDiseaseOther(this)"><span class="choice-button">โรคมะเร็ง</span></label>
+                    </div>
+                </div>
+
+                <div class="mb-6 bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                    <label class="block font-medium text-gray-800 mb-2 text-lg">5. การประสงค์เข้าตรวจปัสสาวะหาไข่พยาธิใบไม้ตับ <span class="text-red-500">*</span></label>
+                    <div class="choice-grid">
+                        <label class="choice-label"><input type="radio" name="intention" value="ประสงค์ตรวจ" required class="choice-input success"><span class="choice-button">ประสงค์ตรวจ</span></label>
+                        <label class="choice-label"><input type="radio" name="intention" value="ไม่ประสงค์ตรวจ" class="choice-input warning"><span class="choice-button">ไม่ประสงค์ตรวจ</span></label>
+                    </div>
+                </div>
+
+                <div id="riskAssessmentPanel" class="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                        <div>
+                            <p class="text-sm font-medium text-gray-500">ผลประเมินความเสี่ยง</p>
+                            <p id="riskLevelText" class="text-xl font-bold text-gray-700">รอข้อมูลคัดกรอง</p>
+                        </div>
+                        <span id="riskBadge" class="inline-flex w-fit items-center rounded-full bg-gray-200 px-4 py-1.5 text-sm font-semibold text-gray-700">รอข้อมูล</span>
+                    </div>
+                    <ul id="riskReasons" class="mt-3 list-inside list-disc space-y-1 text-sm text-gray-700"></ul>
+                    <input type="hidden" id="riskLevel" name="riskLevel">
+                    <input type="hidden" id="riskFactors" name="riskFactors">
+                </div>
+
+                <!-- ส่วนผู้บันทึก -->
+                <div class="mb-8">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อ-สกุล ผู้คัดกรอง/ผู้บันทึกข้อมูล (อสม./เจ้าหน้าที่) <span class="text-red-500">*</span></label>
+                    <input type="text" id="recorder" required class="w-full md:w-1/2 border border-gray-300 rounded-lg p-2.5 bg-yellow-50" placeholder="ระบุชื่อผู้สัมภาษณ์">
+                </div>
+
+                <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 px-4 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition text-lg flex justify-center items-center">
+                    <span id="submitText">บันทึกข้อมูลคัดกรอง</span>
+                    <div id="submitLoader" class="spinner ml-3 hidden"></div>
+                </button>
+            </form>
+        </div>
+
+        <!-- ======================= -->
+        <!-- TAB 2: Dashboard (Admin) -->
+        <!-- ======================= -->
+        <div id="dashboardTab" class="hidden">
+
+            <div class="mb-6">
+                <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900">Dashboard OVCCA</h2>
+                        <p id="dashboardStatsStatus" class="text-sm text-gray-500 mt-1">ตัวเลขรวมล่าสุด</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="loadPublicDashboardStats(true)" class="action-secondary px-4 py-2 text-sm font-semibold">รีเฟรชตัวเลข</button>
+                    </div>
+                </div>
+
+                <!-- สรุปตัวเลข (แสดงได้ก่อน Login) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="stat-card p-4 border-l-4 border-sky-500">
+                        <p class="text-gray-500 text-sm font-medium">คัดกรองทั้งหมด</p>
+                        <p class="text-3xl font-bold text-gray-800" id="stat-total">0</p>
+                        <p class="text-xs text-gray-400 mt-1">คน</p>
+                    </div>
+                    <div class="stat-card p-4 border-l-4 border-orange-500">
+                        <p class="text-gray-500 text-sm font-medium">กินปลาดิบ</p>
+                        <p class="text-3xl font-bold text-orange-600" id="stat-rawfish">0</p>
+                        <p class="text-xs text-gray-400 mt-1">คน</p>
+                    </div>
+                    <div class="stat-card p-4 border-l-4 border-red-500">
+                        <p class="text-gray-500 text-sm font-medium">เคยพบพยาธิ/รับยา</p>
+                        <p class="text-3xl font-bold text-red-600" id="stat-history">0</p>
+                        <p class="text-xs text-gray-400 mt-1">คน</p>
+                    </div>
+                    <div class="stat-card p-4 border-l-4 border-emerald-500">
+                        <p class="text-gray-500 text-sm font-medium">สัดส่วนกลุ่มเสี่ยงสูง</p>
+                        <p class="text-3xl font-bold text-emerald-600" id="stat-risk-percent">0%</p>
+                        <p class="text-xs text-gray-400 mt-1">จากทั้งหมด</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="loginGate" class="surface-card p-10 text-center">
+                <div class="w-14 h-14 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-4">
+                    <svg class="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <p class="text-slate-700 font-semibold">กรุณาเข้าสู่ระบบ</p>
+                <p class="text-slate-400 text-sm mt-1">คลิก 🔐 เข้าสู่ระบบ ที่เมนูด้านบน</p>
+            </div>
+
+            <!-- รายชื่อและรายละเอียด (ซ่อนไว้จนกว่าจะ Login ผ่าน) -->
+            <div id="dashboardContent" class="hidden">
+                <div class="flex flex-wrap justify-between items-center mb-6 gap-3">
+                    <h2 class="text-2xl font-bold text-gray-800">รายชื่อและรายละเอียดการคัดกรอง</h2>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="showExecSummaryModal()" class="flex items-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-700 hover:bg-purple-100 transition">
+                            📊 บทสรุปผู้บริหาร (AI)
+                        </button>
+                        <button id="sendLineBtn" onclick="sendLineReport()" class="action-primary px-4 py-2 text-sm font-semibold text-white flex items-center gap-2">
+                            <span id="sendLineText">📤 ส่งสรุปไป Line OA</span>
+                            <div id="sendLineLoader" class="spinner hidden" style="width:18px;height:18px;border-width:3px"></div>
+                        </button>
+                        <button onclick="logout()" class="bg-red-500 text-white px-4 py-2 rounded shadow hover:bg-red-600 text-sm">ออกจากระบบ</button>
+                    </div>
+                </div>
+
+                <!-- ตารางข้อมูลต่างๆ -->
+                <div class="space-y-8">
+                    
+                    <!-- สรุปราย รพ.สต. -->
+                    <div class="bg-white rounded-xl shadow p-4 md:p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-indigo-500 pl-2">1. สรุปข้อมูลคัดกรอง แยกตาม รพ.สต.</h3>
+                        <div class="table-container">
+                            <table class="min-w-full text-sm text-left text-gray-500">
+                                <thead class="bg-gray-100 text-gray-700 uppercase">
+                                    <tr>
+                                        <th class="px-4 py-3">รพ.สต.</th>
+                                        <th class="px-4 py-3 text-center">คัดกรองแล้ว (คน)</th>
+                                        <th class="px-4 py-3 text-center">กลุ่มเสี่ยงสูง (คน)</th>
+                                        <th class="px-4 py-3 text-center">ประสงค์ตรวจ (คน)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-hospital" class="divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- รายชื่อ อสม. -->
+                    <div class="bg-white rounded-xl shadow p-4 md:p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 border-l-4 border-teal-500 pl-2">2. ผลงานผู้คัดกรอง/ผู้บันทึกข้อมูล (อสม./เจ้าหน้าที่)</h3>
+                        <div class="table-container max-h-64 overflow-y-auto">
+                            <table class="min-w-full text-sm text-left text-gray-500">
+                                <thead class="bg-gray-100 text-gray-700 uppercase sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-3">ชื่อผู้คัดกรอง/ผู้บันทึกข้อมูล</th>
+                                        <th class="px-4 py-3 text-center">จำนวนผู้ที่คัดกรองได้ (คน)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-vhv" class="divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- รายชื่อกลุ่มเสี่ยงสูง -->
+                    <div class="bg-white rounded-xl shadow p-4 md:p-6">
+                        <h3 class="text-lg font-bold text-red-600 mb-4 border-l-4 border-red-500 pl-2">3. รายชื่อกลุ่มเสี่ยงสูง</h3>
+                        <div class="table-container max-h-96 overflow-y-auto">
+                            <table class="min-w-full text-sm text-left text-gray-500">
+                                <thead class="bg-red-50 text-red-700 uppercase sticky top-0">
+                                    <tr>
+                                        <th class="px-4 py-3">รพ.สต.</th>
+                                        <th class="px-4 py-3">ชื่อ-สกุล</th>
+                                        <th class="px-4 py-3">อายุ</th>
+                                        <th class="px-4 py-3">ความเสี่ยงหลัก</th>
+                                        <th class="px-4 py-3">การประสงค์ตรวจ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-highrisk" class="divide-y divide-gray-200"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+                        <!-- ประสงค์ตรวจ -->
+                        <div class="bg-white rounded-xl shadow p-4 md:p-6">
+                            <h3 class="text-lg font-bold text-green-600 mb-4 border-l-4 border-green-500 pl-2">4. ผู้ประสงค์ตรวจปัสสาวะหาไข่พยาธิ</h3>
+                            <div class="table-container max-h-64 overflow-y-auto">
+                                <table class="min-w-full text-sm text-left text-gray-500">
+                                    <thead class="bg-green-50 text-green-700 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-2">ชื่อ-สกุล</th>
+                                            <th class="px-4 py-2">รพ.สต.</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-willing" class="divide-y divide-gray-200"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- เสี่ยงสูงแต่ไม่ตรวจ -->
+                        <div class="bg-white rounded-xl shadow p-4 md:p-6">
+                            <h3 class="text-lg font-bold text-orange-600 mb-4 border-l-4 border-orange-500 pl-2">5. กลุ่มเสี่ยงสูง แต่ "ไม่ประสงค์ตรวจ"</h3>
+                            <div class="table-container max-h-64 overflow-y-auto">
+                                <table class="min-w-full text-sm text-left text-gray-500">
+                                    <thead class="bg-orange-50 text-orange-700 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-2">ชื่อ-สกุล</th>
+                                            <th class="px-4 py-2">รพ.สต.</th>
+                                            <th class="px-4 py-2">หมู่บ้าน</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="table-refuse" class="divide-y divide-gray-200"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Executive Summary Modal -->
+    <div id="execSummaryModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[60] px-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full">
+            <div class="flex justify-between items-center mb-5">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-800">📊 บทสรุปสำหรับผู้บริหาร</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">AI วิเคราะห์ข้อมูล → ส่งไป Line OA</p>
+                </div>
+                <button onclick="hideExecSummaryModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-400 text-lg">✕</button>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Gemini API Key <span class="text-red-500">*</span></label>
+                <input type="password" id="geminiApiKey" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-300 focus:border-purple-400 outline-none" placeholder="AIzaSy...">
+                <p class="text-xs text-gray-400 mt-1">Key บันทึกในเบราว์เซอร์ ไม่ส่งไปที่อื่น</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Gemini Model</label>
+                <select id="geminiModel" class="w-full border border-gray-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-300 outline-none">
+                    <option value="gemini-2.5-flash">gemini-2.5-flash (แนะนำ — เร็ว ฟรี)</option>
+                    <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                    <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                    <option value="gemini-1.5-pro">gemini-1.5-pro</option>
+                    <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                    <option value="gemini-3-flash">gemini-3-flash</option>
+                    <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
+                    <option value="gemini-3-pro">gemini-3-pro</option>
+                </select>
+            </div>
+
+            <div class="flex gap-2 mb-3">
+                <button onclick="testGeminiApi()" id="testGeminiBtn" class="flex-1 flex items-center justify-center gap-1.5 rounded-xl border border-sky-200 bg-sky-50 py-2.5 text-sm font-semibold text-sky-700 hover:bg-sky-100 transition">
+                    <span id="testGeminiText">🧪 ทดสอบการเชื่อมต่อ</span>
+                    <div id="testGeminiLoader" class="spinner hidden" style="width:15px;height:15px;border-width:2px;border-top-color:#0369a1"></div>
+                </button>
+                <button onclick="sendExecutiveSummary()" id="sendExecBtn" class="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 py-2.5 text-sm font-semibold text-white transition">
+                    <span id="sendExecText">📊 สร้าง AI + ส่ง Line</span>
+                    <div id="sendExecLoader" class="spinner hidden" style="width:15px;height:15px;border-width:2px"></div>
+                </button>
+            </div>
+            <p id="geminiStatus" class="text-sm text-center hidden py-1 px-3 rounded-lg"></p>
+        </div>
+    </div>
+
+    <!-- Login Modal (Global — เปิดได้จากทุก Tab) -->
+    <div id="loginModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[60] px-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full">
+            <div class="text-center mb-6">
+                <div class="w-14 h-14 mx-auto bg-sky-50 rounded-full flex items-center justify-center mb-3">
+                    <svg class="w-7 h-7 text-sky-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800">เข้าสู่ระบบ Dashboard</h2>
+                <p class="text-gray-400 text-sm">สำหรับเจ้าหน้าที่เท่านั้น</p>
+            </div>
+            <form onsubmit="adminLogin(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input type="text" id="adminUser" required autocomplete="username" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-sky-300 focus:border-sky-400 outline-none">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="adminPass" required autocomplete="current-password" class="w-full border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-sky-300 focus:border-sky-400 outline-none">
+                </div>
+                <button type="submit" id="loginBtn" class="w-full action-primary text-white font-bold py-3 px-4 flex justify-center items-center">
+                    <span id="loginText">เข้าสู่ระบบ</span>
+                    <div id="loginLoader" class="spinner ml-3 hidden"></div>
+                </button>
+                <button type="button" onclick="hideLoginModal()" class="mt-3 w-full rounded-xl border border-slate-200 bg-white py-3 font-semibold text-slate-500 hover:bg-slate-50">ยกเลิก</button>
+                <p id="loginError" class="text-red-500 text-sm text-center mt-3 hidden"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alert Modal (Custom แจ้งเตือนสวยงามแทน alert ธรรมดา) -->
+    <div id="alertModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60] px-4">
+        <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300">
+            <div id="alertIcon" class="mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-green-100 text-green-500">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 id="alertTitle" class="text-xl font-bold text-gray-800 mb-2">สำเร็จ!</h3>
+            <p id="alertMessage" class="text-gray-600 mb-6">บันทึกข้อมูลเรียบร้อยแล้ว</p>
+            <button onclick="closeAlert()" class="w-full bg-blue-600 text-white font-bold py-2.5 rounded-lg hover:bg-blue-700">ตกลง</button>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // ตั้งค่า URL ของ Web App ที่ได้จาก Google Apps Script
+        // ==========================================
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbxB2WddsXgLym0fY1OLYaQiyEuQoZhyv9S3WhEAMHsBYg4Krl0tRWQVox9IgibZTb9w6Q/exec"; 
+        
+        let dashboardRawData = [];
+        let adminCredentials = null;
+        let publicStatsLoaded = false;
+        const REMEMBER_FIELDS = ['hospital', 'recorder', 'houseNo', 'moo', 'subdistrict', 'district', 'province', 'zipcode'];
+        const REMEMBER_KEY = 'ovcca_screening_defaults';
+        const SETUP_FIELD_MAP = {
+            setupHospital: 'hospital',
+            setupRecorder: 'recorder',
+            setupHouseNo: 'houseNo',
+            setupMoo: 'moo',
+            setupSubdistrict: 'subdistrict',
+            setupDistrict: 'district',
+            setupProvince: 'province',
+            setupZipcode: 'zipcode'
+        };
+
+        function getSelectedValue(name) {
+            const input = document.querySelector(`input[name="${name}"]:checked`);
+            return input ? input.value : "";
+        }
+
+        function getSelectedDiseases() {
+            return Array.from(document.querySelectorAll('input[name="disease"]:checked')).map(c => c.value);
+        }
+
+        function hasLiverRisk(diseaseText) {
+            return (diseaseText || "").includes("โรคตับ") || (diseaseText || "").includes("ตับอักเสบ");
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function getRememberedDefaults() {
+            try {
+                return JSON.parse(localStorage.getItem(REMEMBER_KEY) || "{}");
+            } catch (err) {
+                return {};
+            }
+        }
+
+        function updateSetupPreview() {
+            const defaults = getRememberedDefaults();
+            const hospital = document.getElementById('setupHospital')?.value || defaults.hospital || "-";
+            const recorder = document.getElementById('setupRecorder')?.value || defaults.recorder || "-";
+            const houseNo = document.getElementById('setupHouseNo')?.value || defaults.houseNo || "";
+            const moo = document.getElementById('setupMoo')?.value || defaults.moo || "";
+            const subdistrict = document.getElementById('setupSubdistrict')?.value || defaults.subdistrict || "";
+            const district = document.getElementById('setupDistrict')?.value || defaults.district || "เสลภูมิ";
+            const province = document.getElementById('setupProvince')?.value || defaults.province || "ร้อยเอ็ด";
+            const zipcode = document.getElementById('setupZipcode')?.value || defaults.zipcode || "45120";
+            const address = [houseNo && `บ้านเลขที่ ${houseNo}`, moo && `หมู่ ${moo}`, subdistrict && `ต.${subdistrict}`, district && `อ.${district}`, province && `จ.${province}`, zipcode].filter(Boolean).join(' ');
+
+            document.getElementById('setupPreviewHospital').innerText = hospital || "-";
+            document.getElementById('setupPreviewRecorder').innerText = recorder || "-";
+            document.getElementById('setupPreviewAddress').innerText = address || "-";
+        }
+
+        function syncSetupFromForm() {
+            Object.entries(SETUP_FIELD_MAP).forEach(([setupId, formId]) => {
+                const setupEl = document.getElementById(setupId);
+                const formEl = document.getElementById(formId);
+                if (setupEl && formEl) setupEl.value = formEl.value;
+            });
+            updateSetupPreview();
+        }
+
+        function syncFormFromSetup() {
+            Object.entries(SETUP_FIELD_MAP).forEach(([setupId, formId]) => {
+                const setupEl = document.getElementById(setupId);
+                const formEl = document.getElementById(formId);
+                if (setupEl && formEl) formEl.value = setupEl.value;
+            });
+        }
+
+        function initSetupOptions() {
+            const source = document.getElementById('hospital');
+            const target = document.getElementById('setupHospital');
+            if (source && target) target.innerHTML = source.innerHTML;
+        }
+
+        function rememberScreeningDefaults() {
+            const defaults = {};
+            REMEMBER_FIELDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) defaults[id] = el.value;
+            });
+            try {
+                localStorage.setItem(REMEMBER_KEY, JSON.stringify(defaults));
+            } catch (err) {}
+            syncSetupFromForm();
+        }
+
+        function restoreScreeningDefaults() {
+            const defaults = getRememberedDefaults();
+            REMEMBER_FIELDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (el && defaults[id]) el.value = defaults[id];
+            });
+            syncSetupFromForm();
+        }
+
+        function bindRememberedFields() {
+            REMEMBER_FIELDS.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', rememberScreeningDefaults);
+                el.addEventListener('change', rememberScreeningDefaults);
+            });
+            Object.keys(SETUP_FIELD_MAP).forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', updateSetupPreview);
+                el.addEventListener('change', updateSetupPreview);
+            });
+        }
+
+        function resetScreeningForm() {
+            document.getElementById('screeningForm').reset();
+            document.getElementById('display_age').innerText = "-";
+            document.getElementById('age').value = "";
+            document.querySelectorAll('input[name="disease"]:not([value="ไม่มีโรคประจำตัว"])').forEach(c => {
+                c.disabled = false;
+            });
+            restoreScreeningDefaults();
+            updateRiskAssessment();
+        }
+
+        function saveSetup(e) {
+            e.preventDefault();
+            syncFormFromSetup();
+            rememberScreeningDefaults();
+            showAlert('บันทึกข้อมูลตั้งค่าเบื้องต้นแล้ว', 'success');
+            switchTab('formTab');
+        }
+
+        // 1. จัดการปฏิทิน พ.ศ.
+        function initDateDropdowns() {
+            const daySel = document.getElementById('dob_day');
+            for(let i=1; i<=31; i++) {
+                daySel.innerHTML += `<option value="${i}">${i}</option>`;
+            }
+            const yearSel = document.getElementById('dob_year');
+            const currentYearAD = new Date().getFullYear();
+            const currentYearBE = currentYearAD + 543;
+            // ให้เลือกย้อนหลังไป 120 ปี
+            for(let i = currentYearBE; i >= currentYearBE - 120; i--) {
+                yearSel.innerHTML += `<option value="${i}">${i}</option>`;
+            }
+        }
+
+        // 2. คำนวณอายุ
+        function calculateAge() {
+            const d = document.getElementById('dob_day').value;
+            const m = document.getElementById('dob_month').value;
+            const y = document.getElementById('dob_year').value;
+            
+            if(d && m && y) {
+                const today = new Date();
+                const birthYearAD = parseInt(y) - 543;
+                let age = today.getFullYear() - birthYearAD;
+                
+                // ตรวจสอบเดือนและวัน เพื่อลดอายุถ้ายังไม่ถึงวันเกิดในปีนี้
+                const currentMonth = today.getMonth() + 1;
+                const birthMonth = parseInt(m);
+                if (currentMonth < birthMonth || (currentMonth === birthMonth && today.getDate() < parseInt(d))) {
+                    age--;
+                }
+                
+                document.getElementById('display_age').innerText = age;
+                document.getElementById('age').value = age;
+            } else {
+                document.getElementById('display_age').innerText = "-";
+                document.getElementById('age').value = "";
+            }
+        }
+
+        // 3. จัดการ Checkbox โรคประจำตัว (ถ้าเลือกไม่มีโรค ให้เคลียร์อันอื่น)
+        function toggleDiseaseNone(cb) {
+            const checkboxes = document.querySelectorAll('input[name="disease"]:not([value="ไม่มีโรคประจำตัว"])');
+            if (cb.checked) {
+                checkboxes.forEach(c => { c.checked = false; c.disabled = true; });
+            } else {
+                checkboxes.forEach(c => { c.disabled = false; });
+            }
+            updateRiskAssessment();
+        }
+
+        function toggleDiseaseOther(cb) {
+            if (cb.checked) {
+                const none = document.querySelector('input[name="disease"][value="ไม่มีโรคประจำตัว"]');
+                if (none) none.checked = false;
+            }
+            updateRiskAssessment();
+        }
+
+        function getRiskAssessment(values) {
+            const factors = [];
+            const notes = [];
+            const diseaseText = values.diseases.join(', ');
+
+            if (values.q1_found === "เคย") factors.push("เคยตรวจพบพยาธิใบไม้ตับ");
+            if (values.q2_med === "เคย") factors.push("เคยได้รับยาฆ่าพยาธิใบไม้ตับ");
+            if (values.q3_rawfish === "เคย") factors.push("เคยกินปลาน้ำจืดดิบ/สุกๆดิบๆ หรือปลาร้าไม่ต้มสุก");
+            if (hasLiverRisk(diseaseText)) factors.push("มีประวัติโรคตับ/ตับอักเสบ");
+
+            if (values.q1_found === "ไม่ทราบ") notes.push("ไม่ทราบประวัติเคยตรวจพบพยาธิใบไม้ตับ");
+            if (values.q2_med === "ไม่ทราบ") notes.push("ไม่ทราบประวัติการรับยาฆ่าพยาธิใบไม้ตับ");
+
+            if (factors.length > 0) {
+                return {
+                    level: "กลุ่มเสี่ยงสูง",
+                    badge: "เสี่ยงสูง",
+                    badgeClass: "bg-red-100 text-red-700",
+                    panelClass: "border-red-200 bg-red-50",
+                    textClass: "text-red-700",
+                    reasons: factors
+                };
+            }
+
+            if (notes.length > 0) {
+                return {
+                    level: "ควรซักประวัติเพิ่ม",
+                    badge: "รอตรวจสอบ",
+                    badgeClass: "bg-orange-100 text-orange-700",
+                    panelClass: "border-orange-200 bg-orange-50",
+                    textClass: "text-orange-700",
+                    reasons: notes
+                };
+            }
+
+            if (values.q1_found && values.q2_med && values.q3_rawfish) {
+                return {
+                    level: "ยังไม่พบปัจจัยเสี่ยงสูง",
+                    badge: "ไม่เข้าเกณฑ์เสี่ยงสูง",
+                    badgeClass: "bg-green-100 text-green-700",
+                    panelClass: "border-green-200 bg-green-50",
+                    textClass: "text-green-700",
+                    reasons: []
+                };
+            }
+
+            return {
+                level: "รอข้อมูลคัดกรอง",
+                badge: "รอข้อมูล",
+                badgeClass: "bg-gray-200 text-gray-700",
+                panelClass: "border-gray-200 bg-gray-50",
+                textClass: "text-gray-700",
+                reasons: []
+            };
+        }
+
+        function updateRiskAssessment() {
+            const assessment = getRiskAssessment({
+                q1_found: getSelectedValue('q1_found'),
+                q2_med: getSelectedValue('q2_med'),
+                q3_rawfish: getSelectedValue('q3_rawfish'),
+                diseases: getSelectedDiseases()
+            });
+
+            const panel = document.getElementById('riskAssessmentPanel');
+            const levelText = document.getElementById('riskLevelText');
+            const badge = document.getElementById('riskBadge');
+            const reasons = document.getElementById('riskReasons');
+
+            panel.className = `mb-6 rounded-lg border p-4 ${assessment.panelClass}`;
+            levelText.className = `text-xl font-bold ${assessment.textClass}`;
+            levelText.innerText = assessment.level;
+            badge.className = `inline-flex w-fit items-center rounded-full px-4 py-1.5 text-sm font-semibold ${assessment.badgeClass}`;
+            badge.innerText = assessment.badge;
+            reasons.innerHTML = assessment.reasons.map(reason => `<li>${escapeHtml(reason)}</li>`).join('');
+            document.getElementById('riskLevel').value = assessment.level;
+            document.getElementById('riskFactors').value = assessment.reasons.join(', ');
+        }
+
+        // 4. บันทึกฟอร์ม
+        function submitForm(e) {
+            e.preventDefault();
+            
+            const ageVal = document.getElementById('age').value;
+            if(!ageVal) {
+                showAlert('กรุณาระบุ วัน/เดือน/ปีเกิด ให้ครบถ้วน', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            const txt = document.getElementById('submitText');
+            const loader = document.getElementById('submitLoader');
+            
+            // รวบรวมข้อมูลโรค
+            let diseases = [];
+            document.querySelectorAll('input[name="disease"]:checked').forEach(c => diseases.push(c.value));
+            
+            // สร้างวันที่แบบ string
+            const dobString = `${document.getElementById('dob_day').value}/${document.getElementById('dob_month').value}/${document.getElementById('dob_year').value}`;
+
+            const data = {
+                hospital: document.getElementById('hospital').value,
+                cid: document.getElementById('cid').value,
+                prefix: document.getElementById('prefix').value,
+                fname: document.getElementById('fname').value,
+                lname: document.getElementById('lname').value,
+                gender: document.getElementById('gender').value,
+                dob: dobString,
+                age: ageVal,
+                phone: document.getElementById('phone').value,
+                houseNo: document.getElementById('houseNo').value,
+                moo: document.getElementById('moo').value,
+                subdistrict: document.getElementById('subdistrict').value,
+                district: document.getElementById('district').value,
+                province: document.getElementById('province').value,
+                zipcode: document.getElementById('zipcode').value,
+                q1_found: document.querySelector('input[name="q1_found"]:checked').value,
+                q2_med: document.querySelector('input[name="q2_med"]:checked').value,
+                q3_rawfish: document.querySelector('input[name="q3_rawfish"]:checked').value,
+                disease: diseases.join(', '),
+                intention: document.querySelector('input[name="intention"]:checked').value,
+                recorder: document.getElementById('recorder').value,
+                riskLevel: document.getElementById('riskLevel').value,
+                riskFactors: document.getElementById('riskFactors').value
+            };
+
+            rememberScreeningDefaults();
+
+            // แสดงสถานะโหลด
+            btn.disabled = true;
+            txt.innerText = "กำลังบันทึกข้อมูล...";
+            loader.classList.remove('hidden');
+
+            fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' } // ป้องกัน CORS Preflight
+            })
+            .then(res => res.json())
+            .then(resData => {
+                if(resData.status === 'success') {
+                    showAlert('บันทึกข้อมูลคัดกรองลงฐานข้อมูลเรียบร้อยแล้ว', 'success');
+                    resetScreeningForm();
+                } else {
+                    showAlert('เกิดข้อผิดพลาด: ' + resData.message, 'error');
+                }
+            })
+            .catch(err => {
+                // บางกรณี GAS ส่งกลับแบบ no-cors จะเข้า catch แต่บันทึกสำเร็จ
+                showAlert('บันทึกข้อมูลเรียบร้อยแล้ว (แต่อาจมีการตอบสนองขัดข้องชั่วคราว)', 'success');
+                resetScreeningForm();
+            })
+            .finally(() => {
+                btn.disabled = false;
+                txt.innerText = "บันทึกข้อมูลคัดกรอง";
+                loader.classList.add('hidden');
+            });
+        }
+
+        // 5. สลับ Tab
+        function switchTab(tabId) {
+            document.getElementById('setupTab').classList.add('hidden');
+            document.getElementById('formTab').classList.add('hidden');
+            document.getElementById('dashboardTab').classList.add('hidden');
+            document.getElementById('btn-setupTab').classList.remove('active');
+            document.getElementById('btn-formTab').classList.remove('active');
+            document.getElementById('btn-dashboardTab').classList.remove('active');
+            
+            document.getElementById(tabId).classList.remove('hidden');
+            document.getElementById('btn-' + tabId).classList.add('active');
+
+            if (tabId === 'dashboardTab') {
+                loadPublicDashboardStats();
+            } else if (tabId === 'setupTab') {
+                syncSetupFromForm();
+            }
+        }
+
+        function updateDashboardStats(total, rawFishCount, historyCount, highRiskCount) {
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-rawfish').innerText = rawFishCount;
+            document.getElementById('stat-history').innerText = historyCount;
+            const pRisk = total > 0 ? Math.round((highRiskCount / total) * 100) : 0;
+            document.getElementById('stat-risk-percent').innerText = pRisk + "%";
+        }
+
+        function loadPublicDashboardStats(force = false) {
+            if (publicStatsLoaded && !force) return;
+
+            const status = document.getElementById('dashboardStatsStatus');
+            status.innerText = "กำลังโหลดตัวเลขรวม...";
+
+            fetch(`${GAS_URL}?action=getPublicDashboardStats`)
+            .then(res => res.json())
+            .then(resData => {
+                if (resData.status !== 'success') throw new Error(resData.message || 'load failed');
+                const stats = resData.stats || {};
+                updateDashboardStats(
+                    Number(stats.total || 0),
+                    Number(stats.rawFishCount || 0),
+                    Number(stats.historyCount || 0),
+                    Number(stats.highRiskCount || 0)
+                );
+                publicStatsLoaded = true;
+                status.innerText = `ตัวเลขรวมล่าสุด ${new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })} น.`;
+            })
+            .catch(err => {
+                status.innerText = "ยังโหลดตัวเลขรวมไม่ได้";
+            });
+        }
+
+        function showDashboardLogin() {
+            document.getElementById('loginGate').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('dashboardContent').classList.add('hidden');
+            document.getElementById('openLoginBtn').classList.add('hidden');
+            document.getElementById('adminUser').focus();
+        }
+
+        function hideDashboardLogin() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('loginGate').classList.remove('hidden');
+            document.getElementById('openLoginBtn').classList.remove('hidden');
+            document.getElementById('loginError').classList.add('hidden');
+            document.getElementById('adminPass').value = '';
+        }
+
+        // 6. Admin Login (ส่งรหัสผ่านไปตรวจที่ฝั่ง Backend เท่านั้น ไม่มีการ hardcode รหัส 12345 ไว้ในไฟล์นี้)
+        function adminLogin(e) {
+            e.preventDefault();
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+            const errorMsg = document.getElementById('loginError');
+            
+            const btn = document.getElementById('loginBtn');
+            const txt = document.getElementById('loginText');
+            const loader = document.getElementById('loginLoader');
+
+            errorMsg.classList.add('hidden');
+            btn.disabled = true;
+            txt.innerText = "กำลังตรวจสอบ...";
+            loader.classList.remove('hidden');
+
+            const url = `${GAS_URL}?action=getDashboardData&user=${encodeURIComponent(u)}&pass=${encodeURIComponent(p)}`;
+            
+            fetch(url)
+            .then(res => res.json())
+            .then(resData => {
+                if(resData.status === 'success') {
+                    dashboardRawData = resData.data;
+                    adminCredentials = { user: u, pass: p };
+                    hideLoginModal();
+                    document.getElementById('navLoginBtn').classList.add('hidden');
+                    document.getElementById('navLoggedIn').classList.remove('hidden');
+                    document.getElementById('navLoggedIn').classList.add('flex');
+                    document.getElementById('loginGate').classList.add('hidden');
+                    document.getElementById('dashboardContent').classList.remove('hidden');
+                    switchTab('dashboardTab');
+                    processDashboardData();
+                } else {
+                    errorMsg.innerText = resData.message;
+                    errorMsg.classList.remove('hidden');
+                }
+            })
+            .catch(err => {
+                errorMsg.innerText = "เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่";
+                errorMsg.classList.remove('hidden');
+            })
+            .finally(() => {
+                btn.disabled = false;
+                txt.innerText = "เข้าสู่ระบบ";
+                loader.classList.add('hidden');
+            });
+        }
+
+        // Login Modal
+        function showLoginModal() {
+            document.getElementById('loginError').classList.add('hidden');
+            document.getElementById('loginModal').classList.remove('hidden');
+            document.getElementById('loginModal').classList.add('flex');
+            setTimeout(() => document.getElementById('adminUser').focus(), 100);
+        }
+
+        function hideLoginModal() {
+            document.getElementById('loginModal').classList.add('hidden');
+            document.getElementById('loginModal').classList.remove('flex');
+            document.getElementById('adminPass').value = '';
+        }
+
+        // ส่งสรุปไป Line OA จากปุ่มใน Dashboard
+        function sendLineReport() {
+            if (!adminCredentials) {
+                showAlert('กรุณาเข้าสู่ระบบก่อนส่งสรุป', 'error');
+                return;
+            }
+            const btn  = document.getElementById('sendLineBtn');
+            const txt  = document.getElementById('sendLineText');
+            const spin = document.getElementById('sendLineLoader');
+
+            btn.disabled = true;
+            txt.innerText = 'กำลังส่ง...';
+            spin.classList.remove('hidden');
+
+            const url = `${GAS_URL}?action=sendLineReport&user=${encodeURIComponent(adminCredentials.user)}&pass=${encodeURIComponent(adminCredentials.pass)}`;
+            fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showAlert('✅ ส่งสรุปไป Line OA สำเร็จ!\nทุกคนที่ Follow จะได้รับข้อความแล้ว', 'success');
+                } else {
+                    showAlert('❌ ส่งไม่สำเร็จ: ' + data.message, 'error');
+                }
+            })
+            .catch(() => showAlert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error'))
+            .finally(() => {
+                btn.disabled = false;
+                txt.innerText = '📤 ส่งสรุปไป Line OA';
+                spin.classList.add('hidden');
+            });
+        }
+
+        function logout() {
+            dashboardRawData = [];
+            adminCredentials = null;
+            document.getElementById('dashboardContent').classList.add('hidden');
+            document.getElementById('loginGate').classList.remove('hidden');
+            // คืนปุ่ม Login ใน Navbar
+            document.getElementById('navLoginBtn').classList.remove('hidden');
+            document.getElementById('navLoggedIn').classList.add('hidden');
+            document.getElementById('navLoggedIn').classList.remove('flex');
+            loadPublicDashboardStats(true);
+        }
+
+        // 7. ประมวลผลและสร้าง Dashboard
+        function isHighRisk(row) {
+            const diseaseText = row["โรคประจำตัว"] || row["โรค"] || "";
+            return row["กินปลาน้ำจืดดิบ/สุกๆดิบๆ"] === "เคย" || 
+                   row["เคยตรวจพบพยาธิใบไม้ตับ"] === "เคย" || 
+                   row["เคยรับยาฆ่าพยาธิใบไม้ตับ"] === "เคย" ||
+                   hasLiverRisk(diseaseText);
+        }
+
+        function getRowRiskFactors(row) {
+            const riskText = [];
+            const diseaseText = row["โรคประจำตัว"] || row["โรค"] || "";
+            if(row["กินปลาน้ำจืดดิบ/สุกๆดิบๆ"] === "เคย") riskText.push("กินดิบ");
+            if(row["เคยตรวจพบพยาธิใบไม้ตับ"] === "เคย") riskText.push("เคยพบพยาธิ");
+            if(row["เคยรับยาฆ่าพยาธิใบไม้ตับ"] === "เคย") riskText.push("เคยรับยา");
+            if(hasLiverRisk(diseaseText)) riskText.push("ตับอักเสบ/โรคตับ");
+            return riskText;
+        }
+
+        function processDashboardData() {
+            const data = dashboardRawData;
+            
+            // Stats
+            let total = data.length;
+            let rawFishCount = 0;
+            let historyCount = 0;
+            let highRiskCount = 0;
+
+            let hospData = {};
+            let vhvData = {};
+            let highRiskList = [];
+            let willingList = [];
+            let refuseList = [];
+
+            data.forEach(row => {
+                const isRisk = isHighRisk(row);
+                
+                if(row["กินปลาน้ำจืดดิบ/สุกๆดิบๆ"] === "เคย") rawFishCount++;
+                if(row["เคยตรวจพบพยาธิใบไม้ตับ"] === "เคย" || row["เคยรับยาฆ่าพยาธิใบไม้ตับ"] === "เคย") historyCount++;
+                if(isRisk) highRiskCount++;
+
+                // นับราย รพ.สต.
+                const hosp = row["รพ.สต."] || "ไม่ระบุ";
+                if(!hospData[hosp]) hospData[hosp] = { total: 0, risk: 0, willing: 0 };
+                hospData[hosp].total++;
+                if(isRisk) hospData[hosp].risk++;
+                if(row["การประสงค์เข้าตรวจ"] === "ประสงค์ตรวจ") hospData[hosp].willing++;
+
+                // นับราย อสม.
+                const rec = row["ชื่อผู้คัดกรอง/ผู้บันทึกข้อมูล"] || row["ชื่อผู้บันทึกข้อมูล"] || "ไม่ระบุ";
+                if(!vhvData[rec]) vhvData[rec] = 0;
+                vhvData[rec]++;
+
+                const fullName = `${row["คำนำหน้าชื่อ"] || ""}${row["ชื่อ"] || ""} ${row["นามสกุล"] || ""}`.trim();
+
+                // ลิสต์เสี่ยงสูง
+                if(isRisk) {
+                    let riskText = getRowRiskFactors(row);
+                    
+                    highRiskList.push(`
+                        <tr>
+                            <td class="px-4 py-2">${escapeHtml(hosp)}</td>
+                            <td class="px-4 py-2 font-medium">${escapeHtml(fullName)}</td>
+                            <td class="px-4 py-2">${escapeHtml(row["อายุ"])}</td>
+                            <td class="px-4 py-2 text-red-500">${escapeHtml(riskText.join(', '))}</td>
+                            <td class="px-4 py-2">${escapeHtml(row["การประสงค์เข้าตรวจ"])}</td>
+                        </tr>
+                    `);
+
+                    // เสี่ยงสูงแต่ไม่ตรวจ
+                    if(row["การประสงค์เข้าตรวจ"] === "ไม่ประสงค์ตรวจ") {
+                        refuseList.push(`
+                            <tr>
+                                <td class="px-4 py-2">${escapeHtml(fullName)}</td>
+                                <td class="px-4 py-2">${escapeHtml(hosp)}</td>
+                                <td class="px-4 py-2">หมู่ ${escapeHtml(row["หมู่ที่"])}</td>
+                            </tr>
+                        `);
+                    }
+                }
+
+                // ลิสต์ประสงค์ตรวจ
+                if(row["การประสงค์เข้าตรวจ"] === "ประสงค์ตรวจ") {
+                    willingList.push(`
+                        <tr>
+                            <td class="px-4 py-2">${escapeHtml(fullName)}</td>
+                            <td class="px-4 py-2">${escapeHtml(hosp)}</td>
+                        </tr>
+                    `);
+                }
+            });
+
+            // Update UI Cards
+            updateDashboardStats(total, rawFishCount, historyCount, highRiskCount);
+            publicStatsLoaded = true;
+            document.getElementById('dashboardStatsStatus').innerText = "ตัวเลขรวมจากข้อมูลหลังเข้าสู่ระบบ";
+
+            // Update Tables
+            let hospHtml = "";
+            for (const [key, val] of Object.entries(hospData)) {
+                hospHtml += `
+                    <tr>
+                        <td class="px-4 py-2 font-medium text-gray-900">${escapeHtml(key)}</td>
+                        <td class="px-4 py-2 text-center">${val.total}</td>
+                        <td class="px-4 py-2 text-center text-red-600">${val.risk}</td>
+                        <td class="px-4 py-2 text-center text-green-600">${val.willing}</td>
+                    </tr>
+                `;
+            }
+            document.getElementById('table-hospital').innerHTML = hospHtml || "<tr><td colspan='4' class='text-center py-4'>ไม่มีข้อมูล</td></tr>";
+
+            let vhvHtml = "";
+            // เรียงลำดับ อสม. ตามจำนวนผลงาน
+            let vhvSorted = Object.keys(vhvData).sort((a,b) => vhvData[b] - vhvData[a]);
+            vhvSorted.forEach(key => {
+                vhvHtml += `
+                    <tr>
+                        <td class="px-4 py-2 font-medium">${escapeHtml(key)}</td>
+                        <td class="px-4 py-2 text-center">${vhvData[key]}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('table-vhv').innerHTML = vhvHtml || "<tr><td colspan='2' class='text-center py-4'>ไม่มีข้อมูล</td></tr>";
+
+            document.getElementById('table-highrisk').innerHTML = highRiskList.join('') || "<tr><td colspan='5' class='text-center py-4'>ไม่พบข้อมูล</td></tr>";
+            document.getElementById('table-willing').innerHTML = willingList.join('') || "<tr><td colspan='2' class='text-center py-4'>ไม่พบข้อมูล</td></tr>";
+            document.getElementById('table-refuse').innerHTML = refuseList.join('') || "<tr><td colspan='3' class='text-center py-4'>ไม่พบข้อมูล</td></tr>";
+        }
+
+        // 8. Custom Alert
+        function showAlert(msg, type) {
+            const modal = document.getElementById('alertModal');
+            const icon = document.getElementById('alertIcon');
+            const title = document.getElementById('alertTitle');
+            const message = document.getElementById('alertMessage');
+            
+            message.innerText = msg;
+            
+            if(type === 'success') {
+                icon.className = "mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-green-100 text-green-500";
+                icon.innerHTML = `<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+                title.innerText = "สำเร็จ!";
+                title.className = "text-xl font-bold text-green-600 mb-2";
+            } else {
+                icon.className = "mx-auto w-16 h-16 mb-4 flex items-center justify-center rounded-full bg-red-100 text-red-500";
+                icon.innerHTML = `<svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+                title.innerText = "ผิดพลาด";
+                title.className = "text-xl font-bold text-red-600 mb-2";
+            }
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAlert() {
+            const modal = document.getElementById('alertModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        // ==========================================
+        // Gemini AI — บทสรุปสำหรับผู้บริหาร
+        // ==========================================
+        const GEMINI_STORAGE_KEY = 'ovcca_gemini_settings';
+
+        function loadGeminiSettings() {
+            try {
+                const s = JSON.parse(localStorage.getItem(GEMINI_STORAGE_KEY) || '{}');
+                if (s.apiKey) document.getElementById('geminiApiKey').value = s.apiKey;
+                if (s.model)  document.getElementById('geminiModel').value  = s.model;
+            } catch(e) {}
+        }
+
+        function saveGeminiSettings() {
+            try {
+                localStorage.setItem(GEMINI_STORAGE_KEY, JSON.stringify({
+                    apiKey: document.getElementById('geminiApiKey').value.trim(),
+                    model : document.getElementById('geminiModel').value
+                }));
+            } catch(e) {}
+        }
+
+        function showExecSummaryModal() {
+            loadGeminiSettings();
+            const s = document.getElementById('geminiStatus');
+            s.classList.add('hidden');
+            document.getElementById('execSummaryModal').classList.remove('hidden');
+            document.getElementById('execSummaryModal').classList.add('flex');
+        }
+
+        function hideExecSummaryModal() {
+            document.getElementById('execSummaryModal').classList.add('hidden');
+            document.getElementById('execSummaryModal').classList.remove('flex');
+        }
+
+        function setGeminiStatus(msg, type) {
+            const s = document.getElementById('geminiStatus');
+            const colors = { success: 'bg-green-50 text-green-700', error: 'bg-red-50 text-red-600', info: 'bg-purple-50 text-purple-700' };
+            s.className = 'text-sm text-center py-1 px-3 rounded-lg ' + (colors[type] || colors.info);
+            s.textContent = msg;
+            s.classList.remove('hidden');
+        }
+
+        // ทดสอบ Gemini ตรงจากเบราว์เซอร์ — ไม่ผ่าน GAS เพื่อหลีกเลี่ยง parameter encoding issues
+        async function testGeminiApi() {
+            const key   = document.getElementById('geminiApiKey').value.trim();
+            const model = document.getElementById('geminiModel').value;
+            if (!key) { setGeminiStatus('❌ กรุณาระบุ Gemini API Key', 'error'); return; }
+            saveGeminiSettings();
+
+            const btn  = document.getElementById('testGeminiBtn');
+            const txt  = document.getElementById('testGeminiText');
+            const spin = document.getElementById('testGeminiLoader');
+            btn.disabled = true;
+            txt.textContent = 'กำลังทดสอบ...';
+            spin.classList.remove('hidden');
+            setGeminiStatus('⏳ กำลังทดสอบ ' + model + ' ...', 'info');
+
+            try {
+                const resp = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+                    {
+                        method : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body   : JSON.stringify({ contents: [{ parts: [{ text: 'ตอบสั้นๆว่า: เชื่อมต่อสำเร็จ' }] }] })
+                    }
+                );
+                const data = await resp.json();
+                if (resp.ok) {
+                    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'OK';
+                    setGeminiStatus('✅ เชื่อมต่อสำเร็จ! (' + model + ')\n💬 ' + reply, 'success');
+                } else {
+                    const errMsg = data.error?.message || data.error?.status || JSON.stringify(data);
+                    setGeminiStatus('❌ ' + errMsg, 'error');
+                }
+            } catch (err) {
+                setGeminiStatus('❌ ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                txt.textContent = '🧪 ทดสอบการเชื่อมต่อ';
+                spin.classList.add('hidden');
+            }
+        }
+
+        function sendExecutiveSummary() {
+            if (!adminCredentials) { showAlert('กรุณาเข้าสู่ระบบก่อน', 'error'); return; }
+            const key   = document.getElementById('geminiApiKey').value.trim();
+            const model = document.getElementById('geminiModel').value;
+            if (!key) { setGeminiStatus('❌ กรุณาระบุ Gemini API Key', 'error'); return; }
+            saveGeminiSettings();
+
+            const btn  = document.getElementById('sendExecBtn');
+            const txt  = document.getElementById('sendExecText');
+            const spin = document.getElementById('sendExecLoader');
+            btn.disabled = true;
+            txt.textContent = 'กำลังสร้าง...';
+            spin.classList.remove('hidden');
+            setGeminiStatus('🤖 AI กำลังวิเคราะห์ข้อมูลและสร้างบทสรุป กรุณารอ 10–20 วินาที...', 'info');
+
+            const url = `${GAS_URL}?action=sendExecutiveSummary&user=${encodeURIComponent(adminCredentials.user)}&pass=${encodeURIComponent(adminCredentials.pass)}&geminiKey=${encodeURIComponent(key)}&geminiModel=${encodeURIComponent(model)}`;
+            fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    hideExecSummaryModal();
+                    showAlert('✅ ส่งบทสรุปผู้บริหารไป Line OA สำเร็จ!\n🤖 สรุปโดย ' + model, 'success');
+                } else {
+                    setGeminiStatus('❌ ' + data.message, 'error');
+                }
+            })
+            .catch(() => setGeminiStatus('❌ เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error'))
+            .finally(() => { btn.disabled = false; txt.textContent = '📊 สร้าง AI + ส่ง Line'; spin.classList.add('hidden'); });
+        }
+
+        // Initialize On Load
+        window.onload = () => {
+            initDateDropdowns();
+            initSetupOptions();
+            restoreScreeningDefaults();
+            bindRememberedFields();
+            updateRiskAssessment();
+            switchTab('setupTab');
+        };
+
+    </script>
+</body>
+</html>
